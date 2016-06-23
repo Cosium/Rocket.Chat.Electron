@@ -14,6 +14,7 @@ const toaster = new Toaster();
 // in config/env_xxx.json file.
 import env from './env';
 
+var os = require('os');
 var mainWindow;
 
 if (process.platform !== 'darwin') {
@@ -101,19 +102,21 @@ app.on('ready', function () {
         event.preventDefault();
     });
 
-    toaster.init(mainWindow);
+    if(os.platform() === 'win32' && os.release().indexOf('10') !== 0){
+        toaster.init(mainWindow);
 
-    ipcMain.on('notification-shim', (e, msg) => {
-        
-        mainWindow.webContents.executeJavaScript(`
-            require('electron').ipcRenderer.send('electron-toaster-message', {
-                title: '${msg.title}',
-                message: \`${msg.options.body}\`,
-                width: 400,
-                htmlFile: 'file://'+__dirname+'/notification.html?'
-            });
-        `);
-    });
+        ipcMain.on('notification-shim', (e, msg) => {
+
+                mainWindow.webContents.executeJavaScript(`
+                require('electron').ipcRenderer.send('electron-toaster-message', {
+                    title: '${msg.title}',
+                    message: \`${msg.options.body}\`,
+                    width: 400,
+                    htmlFile: 'file://'+__dirname+'/notification.html?'
+                });
+            `);
+        });
+    }
 
     certificate.initWindow(mainWindow);
 });
